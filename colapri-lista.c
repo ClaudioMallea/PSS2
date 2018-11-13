@@ -21,6 +21,7 @@ typedef struct {
   ColaPriOps *ops;
   CompPri comp;
   Node* nodo;
+  int n;
 } ColaPriLista; /* ColaPriLista no es un puntero, ColaPri si lo es */
 
 static void agregar(ColaPri colapri, void *a);
@@ -41,65 +42,53 @@ ColaPri nuevaColaPriLista(CompPri comp) {
   ColaPriLista *cp= malloc(sizeof(ColaPriLista));
   cp->ops= &colapri_lista_ops;
   cp->comp= comp;
-  cp->nodo= malloc(sizeof(Node*));
+  cp->nodo= malloc(sizeof(Node));
+  cp->n=0;
+  /*cp->nodo->valor=NULL;*/
+  cp->nodo->next=NULL;
   return (ColaPri)cp;
 }
-
 /* Los elementos estan ordenados de mejor a peor prioridad */
 static void agregar(ColaPri colapri, void *a) {
   ColaPriLista *cp= (ColaPriLista*)colapri;
-
     Node* start = cp->nodo; 
-    Node NodoVacio= {NULL, NULL};
-
-    void *prev= a;
  
-    Node *n1= malloc(sizeof(Node));
-    n1->valor= prev;
-    n1->next= &NodoVacio;
+    Node *temp= (Node*)malloc(sizeof(Node));
+    temp->valor= a;
+    temp->next= NULL;
     
-
-    Node* temp = n1;
- 
-
-
     
-  if(cp->nodo->valor==NULL){
-
     
-    Node *ins= malloc(sizeof(Node));
-    ins->valor= prev;
-    ins->next= &NodoVacio;
-    cp->nodo= ins;
-    start=cp->nodo;
+  
   
     
+  if(cp->n==0){
+
+    
+    cp->nodo->valor=a;
+    
+    cp->n++;  
   }
+
+
   else{
+
     if ( (*cp->comp)(a, start->valor)<0) { 
         temp->next = cp->nodo; 
         cp->nodo = temp; 
-
-    } 
+        cp->n++;
+      } 
     else { 
-        
-  
-
-
-        while (start->next != &NodoVacio && 
-               (*cp->comp)(a, start->next->valor)>0 ) { 
-        
+        while (start->next != NULL && 
+               ((*cp->comp)(a, start->next->valor)>0 )) { 
             start = start->next;
             
         } 
-
         temp->next = start->next; 
         start->next = temp; 
-   
-      
-        
-    } }
-
+        cp->n++;  
+      } 
+  }
 }
 
 
@@ -113,27 +102,28 @@ static void* mejor(ColaPri colapri) {
 }
 
 
-
-
-
 static int tamano(ColaPri colapri) {
-  ColaPriLista *cp= (ColaPriLista*)colapri;
-    Node* n=cp->nodo;
-    int j=0;
-     while (n->valor!=NULL) {
-      
-      n= n->next;
-      j++;
-    }
-    
-    return j;
+  ColaPriLista *cp= (ColaPriLista*)colapri;  
+    return cp->n;
 }
 
 static void* extraer(ColaPri colapri) {
   ColaPriLista *cp= (ColaPriLista*)colapri;
   void *res= cp->nodo->valor;
-  cp->nodo=cp->nodo->next;
+  Node *sgte= cp->nodo->next;
+
+  if(cp->n==1){
+  cp->nodo->valor=NULL;
+
+  }
+  else{
+  cp->nodo->next=sgte->next;  
+  cp->nodo->valor=sgte->valor;
+  }
+
+  cp->n--;
   return res;
+  
 }
 
 static void destruir(ColaPri colapri) {
@@ -167,14 +157,8 @@ IterColaP iterador(ColaPri colapri) {
 
 static int continua(IterColaP itercp) {
   IterColaPLista *iter= (IterColaPLista*)itercp;
-    Node* n=iter->cp->nodo;
-    int j=0;
-     while (n->valor!=NULL) {     
-      n= n->next;
-      j++;
-    }
-  
-  return iter->k < j;
+
+  return iter->k < iter->cp->n;;
 }
 
 static void *proximo(IterColaP itercp) {
@@ -189,6 +173,7 @@ static void *proximo(IterColaP itercp) {
     NodoActual=NodoActual->next;
     i++;
   }
+
   iter->k++;
   return NodoActual->valor;
 }

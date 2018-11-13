@@ -121,7 +121,6 @@ int main() {
   /* Se extrae y agregan N-M elementos */
   for ( ; k<N; k++) {
     long long r1= irand(N), r2= irand(N);
-    printf("HOLA");
     if (ref2->ops->extraer(ref2)!=cola2->ops->extraer(cola2))
       error("la cola cola2 no entrego el mismo elemento que ref2\n");
     ref2->ops->agregar(ref2, (void*)r1);
